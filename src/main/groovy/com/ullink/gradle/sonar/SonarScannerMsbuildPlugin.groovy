@@ -16,6 +16,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
 
     static final DEFAULT_SCANNER_VERSION = '4.6.0.1930'
     static final DEFAULT_MSBUILD_TASK_NAME = 'msbuild'
+    static final INIT_SONAR_SCANNER_TASK_NAME = 'initSonarScanner'
     static final PROJECT_KEY_ARG = 'sonar.projectKey'
     static final MANDATORY_ARGS = [n: 'sonar.projectName', v: 'sonar.projectVersion']
 
@@ -36,29 +37,33 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
 
                 // Since some properties may not be evaluated at this moment, let's initialize the arguments
                 // right before the init task's execution
-                def configureArgsTask = project.task('configureSonarProperties') {
+                def configureArgsTask = project.tasks.register('configureSonarProperties') {
                     doLast {
-                        project.tasks.initSonarScanner.commandLine += buildArgs(project, scannerExtension.properties.properties)
+                        project.tasks.named(INIT_SONAR_SCANNER_TASK_NAME).get().configure {
+                            commandLine += buildArgs(project, scannerExtension.properties.properties)
+                        }
                     }
                 }
-                def initSonarScannerTask = project.task('initSonarScanner', type: Exec, dependsOn: configureArgsTask) {
+                def initSonarScannerTask = project.tasks.register(INIT_SONAR_SCANNER_TASK_NAME, Exec) {
+                    dependsOn configureArgsTask
                     commandLine = [sonarScanner, 'begin']
                 }
 
                 // keep the 'sonarqube' name for compatibility
-                def sonarScannerTask = project.task('sonarqube', type: Exec) {
+                def sonarScannerTask = project.tasks.register('sonarqube', Exec) {
                     commandLine = [sonarScanner, 'end']
                 }
 
                 if (!sonarScanner.exists()) {
                     cacheDir.mkdirs()
-                    def scannerDownloadTask = project.task('downloadSonarScannerMsbuild', type: Download) {
+                    def scannerDownloadTask = project.tasks.register('downloadSonarScannerMsbuild', Download) {
                         src "https://github.com/SonarSource/sonar-scanner-msbuild/releases/download/${scannerVersion}/${scannerZipName}"
                         dest File.createTempDir()
                     }
                     def scannerCacheDir = new File(cacheDir, scannerVersion)
                     scannerCacheDir.mkdir()
-                    def unzipTask = project.task('unzipSonarScannerMsbuild', type: Copy, dependsOn: scannerDownloadTask) {
+                    def unzipTask = project.tasks.register('unzipSonarScannerMsbuild', Copy) {
+                        dependsOn scannerDownloadTask
                         from project.zipTree(new File(scannerDownloadTask.dest, scannerZipName))
                         into scannerCacheDir
                     }
