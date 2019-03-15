@@ -49,7 +49,6 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
                 def sonarScannerTask = project.task('sonarqube', type: Exec) {
                     commandLine = [sonarScanner, 'end']
                 }
-                project.task('sonar', dependsOn: sonarScannerTask) // alias for sonarqube
 
                 if (!sonarScanner.exists()) {
                     cacheDir.mkdirs()
