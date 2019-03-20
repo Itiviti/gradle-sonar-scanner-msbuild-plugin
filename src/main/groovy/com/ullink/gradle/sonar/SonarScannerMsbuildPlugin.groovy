@@ -59,7 +59,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
                 dest tempDir
             }
             def scannerDir = getVersionCacheDir(project)
-            scannerDir.mkdir()
+            scannerDir.mkdirs()
             project.copy {
                 from project.zipTree(new File(tempDir, SONAR_SCANNER_ZIP))
                 into scannerDir
