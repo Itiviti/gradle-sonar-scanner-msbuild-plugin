@@ -33,7 +33,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         // It cannot be done by tasks because we don't know if sonarqube task is declared or not
         // before the task graph is ready. That is why the initialization is done at evaluation time.
         project.gradle.taskGraph.whenReady { graph ->
-            if (graph.hasTask("${project.path}:${SONAR_SCANNER_TASK_NAME}")) {
+            if (graph.hasTask("${project.path}:${SONAR_SCANNER_TASK_NAME}") || graph.hasTask(":${SONAR_SCANNER_TASK_NAME}")) {
                 project.logger.info("${SONAR_SCANNER_TASK_NAME} task was detected. Initializing sonar-scanner-msbuild...")
                 initSonarScanner(project, scannerExtension)
             }
@@ -54,6 +54,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
                 "already exists in cache ${getCacheDir(project).path}.")
         } else {
             def tempDir = File.createTempDir()
+            tempDir.deleteOnExit()
             project.download {
                 src "${SONAR_SCANNER_GITHUB_URL}/releases/download/${SONAR_SCANNER_VERSION}/${SONAR_SCANNER_ZIP}"
                 dest tempDir
