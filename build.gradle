@@ -11,6 +11,9 @@ dependencies {
     compile(
         [group: 'de.undercouch', name: 'gradle-download-task', version: '3.4.3']
     )
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+        exclude group: 'org.codehaus.groovy'
+    }
 }
 
 bintray {
