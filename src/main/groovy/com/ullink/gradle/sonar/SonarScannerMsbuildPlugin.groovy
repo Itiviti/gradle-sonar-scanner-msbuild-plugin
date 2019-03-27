@@ -3,6 +3,9 @@ package com.ullink.gradle.sonar
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
+import org.sonarqube.gradle.ActionBroadcast
+import org.sonarqube.gradle.SonarPropertyComputer
+import org.sonarqube.gradle.SonarQubeExtension
 
 /**
  * Uses SonarScanner for MSBuild to run the Sonarqube analysis.
@@ -18,12 +21,19 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
     static final SONAR_SCANNER_EXE = 'SonarScanner.MSBuild.exe'
     // keep the 'sonarqube' name for compatibility with the org.sonarqube plugin
     static final SONAR_SCANNER_TASK_NAME = 'sonarqube'
-    static final PROJECT_KEY_ARG = 'sonar.projectKey'
-    static final MANDATORY_ARGS = [n: 'sonar.projectName', v: 'sonar.projectVersion']
+    static final MANDATORY_ARGS = [k: 'sonar.projectKey',
+                                   n: 'sonar.projectName',
+                                   v: 'sonar.projectVersion'
+    ]
+    static final IGNORED_PROPERTIES = [
+        'sonar.working.directory' // is automatically set and cannot be overridden on the command line
+    ]
+
+    def actionBroadcast = new ActionBroadcast()
 
     @Override
     void apply(Project project) {
-        def scannerExtension = project.extensions.create('sonarqube', SonarScannerMsbuildExtension)
+        project.extensions.create('sonarqube', SonarQubeExtension, actionBroadcast)
 
         project.tasks.register(SONAR_SCANNER_TASK_NAME, Exec) {
             commandLine = [getSonarScannerFile(project), 'end']
@@ -35,15 +45,15 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         project.gradle.taskGraph.whenReady { graph ->
             if (graph.hasTask("${project.path}:${SONAR_SCANNER_TASK_NAME}") || graph.hasTask(":${SONAR_SCANNER_TASK_NAME}")) {
                 project.logger.info("${SONAR_SCANNER_TASK_NAME} task was detected. Initializing sonar-scanner-msbuild...")
-                initSonarScanner(project, scannerExtension)
+                initSonarScanner(project)
             }
         }
     }
 
-    private void initSonarScanner(Project project, SonarScannerMsbuildExtension extension) {
+    private void initSonarScanner(Project project) {
         downloadSonarScanner(project)
         project.exec {
-            commandLine = [getSonarScannerFile(project), 'begin'] + buildArgs(project, extension.properties.properties)
+            commandLine = [getSonarScannerFile(project), 'begin'] + buildArgs(computeSonarProperties(project))
         }
     }
 
@@ -82,24 +92,25 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         new File(getVersionCacheDir(project), SONAR_SCANNER_EXE)
     }
 
-    private static def buildArgs(Project project, Map<String, Object> properties) {
-        def args = []
+    private static def buildArgs(Map<String, Object> properties) {
 
-        def projectKey = properties[PROJECT_KEY_ARG] ?: project.name
-        args += "/k:\"${projectKey}\""
-
-        MANDATORY_ARGS.each { key, value ->
-            def propertyValue = properties[value]
-            if (propertyValue != null) {
-                args += "/${key}:\"${propertyValue}\""
-            }
+        def mandatoryArgs = MANDATORY_ARGS.collect { key, value ->
+            "/${key}:${properties[value]}"
         }
 
-        properties.each { key, value ->
-            if (!(key in (MANDATORY_ARGS.values() + PROJECT_KEY_ARG))) {
-                args += "/d:${key}=${value}"
-            }
+        def otherArgs = properties.findAll { key, value ->
+            !(key in MANDATORY_ARGS.values()) && !(key in IGNORED_PROPERTIES) && value != ''
+        }.collect { key, value ->
+            "/d:${key}=${value}"
         }
-        return args
+
+        return mandatoryArgs + otherArgs
+    }
+
+    private def computeSonarProperties(Project project) {
+        def actionBradcastMap = [:]
+        actionBradcastMap.put(project, actionBroadcast)
+        def propertyComputer = new SonarPropertyComputer(actionBradcastMap, project)
+        return propertyComputer.computeSonarProperties()
     }
 }
