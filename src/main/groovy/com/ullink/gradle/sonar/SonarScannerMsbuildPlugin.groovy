@@ -35,6 +35,8 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.extensions.create('sonarqube', SonarQubeExtension, actionBroadcast)
 
+        project.apply plugin: 'de.undercouch.download'
+
         project.tasks.register(SONAR_SCANNER_TASK_NAME, Exec) {
             commandLine = [getSonarScannerFile(project), 'end']
         }
