@@ -3,14 +3,13 @@ plugins {
     id 'net.researchgate.release' version '2.6.0'
     id 'groovy'
 }
-
 group = 'com.ullink.gradle'
 description 'Uses sonar-scanner-msbuild to do static analysis with Sonarqube.'
 
 dependencies {
     compile(
         [group: 'de.undercouch', name: 'gradle-download-task', version: '3.4.3'],
-        [group: 'org.sonarsource.scanner.gradle', name: 'sonarqube-gradle-plugin', version: '2.7']
+        [group: 'org.sonarsource.scanner.gradle', name: 'sonarqube-gradle-plugin', version: '2.8']
     )
 }
 

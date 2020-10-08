@@ -6,7 +6,7 @@ import org.gradle.api.tasks.Exec
 import org.sonarqube.gradle.ActionBroadcast
 import org.sonarqube.gradle.SonarPropertyComputer
 import org.sonarqube.gradle.SonarQubeExtension
-
+import org.sonarqube.gradle.SonarQubeProperties
 /**
  * Uses SonarScanner for MSBuild to run the Sonarqube analysis.
  * See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+MSBuild
@@ -29,7 +29,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         'sonar.working.directory' // is automatically set and cannot be overridden on the command line
     ]
 
-    def actionBroadcast = new ActionBroadcast()
+    def actionBroadcast = new ActionBroadcast<SonarQubeProperties>()
 
     @Override
     void apply(Project project) {
@@ -95,7 +95,6 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
     }
 
     private static def buildArgs(Map<String, Object> properties) {
-
         def mandatoryArgs = MANDATORY_ARGS.collect { key, value ->
             "/${key}:${properties[value]}"
         }
@@ -110,9 +109,9 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
     }
 
     private def computeSonarProperties(Project project) {
-        def actionBradcastMap = [:]
-        actionBradcastMap.put(project, actionBroadcast)
-        def propertyComputer = new SonarPropertyComputer(actionBradcastMap, project)
+        Map<String, ActionBroadcast<SonarQubeProperties>> actionBroadcastMap = [:]
+        actionBroadcastMap.put(project.getPath(), actionBroadcast)
+        def propertyComputer = new SonarPropertyComputer(actionBroadcastMap, project)
         return propertyComputer.computeSonarProperties()
     }
 }
