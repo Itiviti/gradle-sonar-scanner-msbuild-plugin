@@ -33,9 +33,12 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.extensions.create('sonarqube', SonarQubeExtension, actionBroadcast)
-
         project.apply plugin: 'de.undercouch.download'
+
+        project.allprojects { p ->
+            project.logger.info("Adding sonarqube extension to project ${p.getName()}")
+            p.extensions.create('sonarqube', SonarQubeExtension, actionBroadcast)
+        }
 
         project.tasks.register(SONAR_SCANNER_TASK_NAME, Exec) {
             commandLine = [getSonarScannerFile(project), 'end']
