@@ -32,10 +32,17 @@ gradlePlugin {
 pluginBundle  {
     website = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
     vcsUrl = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
+    description = 'gradle-sonar-scanner-msbuild-plugin is a Gradle plugin for running sonar with msbuild'
+    tags = ['msbuild', 'sonar']
 
     plugins {
         SonarScannerMsbuildPlugin {
             displayName = 'Gradle msbuild sonar plugin'
         }
+    }
+
+    mavenCoordinates {
+        groupId = 'com.ullink.gradle'
+        artifactId = 'gradle-sonar-scanner-msbuild-plugin'
     }
 }
