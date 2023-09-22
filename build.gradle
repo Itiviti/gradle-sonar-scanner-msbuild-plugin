@@ -14,8 +14,10 @@ dependencies {
     )
 }
 
-git {
-    requireBranch.set('master')
+release {
+    git {
+        requireBranch.set('master')
+    }
 }
 
 gradlePlugin {
