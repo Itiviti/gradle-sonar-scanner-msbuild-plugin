@@ -23,7 +23,7 @@ release {
 gradlePlugin {
     plugins {
         SonarScannerMsbuildPlugin {
-            id = 'com.ullink.gradle.sonar.SonarScannerMsbuildPlugin'
+            id = 'com.ullink.sonar-scanner-msbuild'
             implementationClass = 'com.ullink.gradle.sonar.SonarScannerMsbuildPlugin'
         }
     }
