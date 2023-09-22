@@ -1,6 +1,6 @@
 plugins {
-    id 'nu.studer.plugindev' version '1.0.12'
-    id 'net.researchgate.release' version '2.6.0'
+    id 'com.gradle.plugin-publish' version '1.2.1'
+    id 'net.researchgate.release' version '3.0.2'
     id 'groovy'
 }
 group = 'com.ullink.gradle'
@@ -13,27 +13,13 @@ dependencies {
     )
 }
 
-bintray {
-    user project.properties.bintrayUser
-    key project.properties.bintrayApiKey
-    pkg.repo = 'gradle-plugins'
-    pkg.version.gpg.sign = true
-    pkg.userOrg = 'ullink'
+gradlePlugin {
+    website = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
+    vcsUrl = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
+    plugins {
+        create('SonarScannerMsbuildPlugin') {
+            id = 'com.ullink.gradle.sonar.SonarScannerMsbuildPlugin'
+            implementationClass = 'com.ullink.gradle.sonar.SonarScannerMsbuildPlugin'
+        }
+    }
 }
-
-plugindev {
-    pluginName 'com.ullink.gradle:gradle-sonar-scanner-msbuild-plugin'
-    pluginDescription project.description
-    pluginLicenses 'Apache-2.0'
-    pluginTags 'gradle', 'plugin', 'sonar', 'msbuild', 'c#', '.net'
-    authorId 'apetres'
-    authorName 'Petres Andras'
-    authorEmail 'petres.andras@gmail.com'
-    projectUrl "https://github.com/Ullink/${project.name}"
-    projectInceptionYear '2019'
-    pluginId = 'com.ullink.sonar-scanner-msbuild'
-    pluginImplementationClass 'com.ullink.gradle.sonar.SonarScannerMsbuildPlugin'
-    done()
-}
-
-afterReleaseBuild.dependsOn project.tasks.bintrayUpload
