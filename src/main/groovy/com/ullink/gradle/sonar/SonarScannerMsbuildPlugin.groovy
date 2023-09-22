@@ -20,7 +20,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
     static final SONAR_SCANNER_ZIP = "sonar-scanner-msbuild-${SONAR_SCANNER_VERSION}-net46.zip"
     static final SONAR_SCANNER_EXE = 'SonarScanner.MSBuild.exe'
     // keep the 'sonarqube' name for compatibility with the org.sonarqube plugin
-    static final SONAR_SCANNER_TASK_NAME = 'sonarqube'
+    static final SONAR_SCANNER_TASK_NAME = 'sonar'
     static final MANDATORY_ARGS = [k: 'sonar.projectKey',
                                    n: 'sonar.projectName',
                                    v: 'sonar.projectVersion'
@@ -37,6 +37,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
 
         project.allprojects { p ->
             project.logger.info("Adding sonarqube extension to project ${p.getName()}")
+            p.extensions.create('sonar', SonarExtension, actionBroadcast)
             p.extensions.create('sonarqube', SonarExtension, actionBroadcast)
         }
 
