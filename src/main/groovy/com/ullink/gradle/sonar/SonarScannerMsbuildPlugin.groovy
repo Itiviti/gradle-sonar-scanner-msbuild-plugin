@@ -5,8 +5,8 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import org.sonarqube.gradle.ActionBroadcast
 import org.sonarqube.gradle.SonarPropertyComputer
-import org.sonarqube.gradle.SonarQubeExtension
-import org.sonarqube.gradle.SonarQubeProperties
+import org.sonarqube.gradle.SonarExtension
+import org.sonarqube.gradle.SonarProperties
 /**
  * Uses SonarScanner for MSBuild to run the Sonarqube analysis.
  * See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+MSBuild
@@ -16,7 +16,7 @@ import org.sonarqube.gradle.SonarQubeProperties
 class SonarScannerMsbuildPlugin implements Plugin<Project> {
 
     static final SONAR_SCANNER_GITHUB_URL = 'https://github.com/SonarSource/sonar-scanner-msbuild'
-    static final SONAR_SCANNER_VERSION = '4.6.0.1930'
+    static final SONAR_SCANNER_VERSION = '5.13.1.76110'
     static final SONAR_SCANNER_ZIP = "sonar-scanner-msbuild-${SONAR_SCANNER_VERSION}-net46.zip"
     static final SONAR_SCANNER_EXE = 'SonarScanner.MSBuild.exe'
     // keep the 'sonarqube' name for compatibility with the org.sonarqube plugin
@@ -29,7 +29,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         'sonar.working.directory' // is automatically set and cannot be overridden on the command line
     ]
 
-    def actionBroadcast = new ActionBroadcast<SonarQubeProperties>()
+    def actionBroadcast = new ActionBroadcast<SonarProperties>()
 
     @Override
     void apply(Project project) {
@@ -37,7 +37,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
 
         project.allprojects { p ->
             project.logger.info("Adding sonarqube extension to project ${p.getName()}")
-            p.extensions.create('sonarqube', SonarQubeExtension, actionBroadcast)
+            p.extensions.create('sonarqube', SonarExtension, actionBroadcast)
         }
 
         project.tasks.register(SONAR_SCANNER_TASK_NAME, Exec) {
@@ -112,7 +112,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
     }
 
     private def computeSonarProperties(Project project) {
-        Map<String, ActionBroadcast<SonarQubeProperties>> actionBroadcastMap = [:]
+        Map<String, ActionBroadcast<SonarProperties>> actionBroadcastMap = [:]
         actionBroadcastMap.put(project.getPath(), actionBroadcast)
         def propertyComputer = new SonarPropertyComputer(actionBroadcastMap, project)
         return propertyComputer.computeSonarProperties()
