@@ -1,5 +1,6 @@
 plugins {
-    id 'com.gradle.plugin-publish' version '1.2.1'
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '0.15.0'
     id 'net.researchgate.release' version '3.0.2'
     id 'groovy'
 }
@@ -14,12 +15,21 @@ dependencies {
 }
 
 gradlePlugin {
-    website = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
-    vcsUrl = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
     plugins {
-        create('SonarScannerMsbuildPlugin') {
+        SonarScannerMsbuildPlugin {
             id = 'com.ullink.gradle.sonar.SonarScannerMsbuildPlugin'
             implementationClass = 'com.ullink.gradle.sonar.SonarScannerMsbuildPlugin'
+        }
+    }
+}
+
+pluginBundle  {
+    website = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
+    vcsUrl = 'https://www.github.com/Itiviti/gradle-sonar-scanner-msbuild-plugin'
+
+    plugins {
+        SonarScannerMsbuildPlugin {
+            displayName = 'Gradle msbuild sonar plugin'
         }
     }
 }
