@@ -46,3 +46,5 @@ pluginBundle  {
         artifactId = 'gradle-sonar-scanner-msbuild-plugin'
     }
 }
+
+tasks.afterReleaseBuild.dependsOn tasks.publishPlugins
