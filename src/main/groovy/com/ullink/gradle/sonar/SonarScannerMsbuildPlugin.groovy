@@ -1,5 +1,6 @@
 package com.ullink.gradle.sonar
 
+import de.undercouch.gradle.tasks.download.DownloadExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
@@ -71,7 +72,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         } else {
             def tempDir = File.createTempDir()
             tempDir.deleteOnExit()
-            project.download {
+            project.getExtensions().getByType(DownloadExtension).run {
                 src "${SONAR_SCANNER_GITHUB_URL}/releases/download/${SONAR_SCANNER_VERSION}/${SONAR_SCANNER_ZIP}"
                 dest tempDir
             }
