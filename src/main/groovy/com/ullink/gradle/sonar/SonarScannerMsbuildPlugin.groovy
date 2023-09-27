@@ -4,10 +4,12 @@ import de.undercouch.gradle.tasks.download.DownloadExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.sonarqube.gradle.ActionBroadcast
 import org.sonarqube.gradle.SonarPropertyComputer
 import org.sonarqube.gradle.SonarExtension
 import org.sonarqube.gradle.SonarProperties
+
 /**
  * Uses SonarScanner for MSBuild to run the Sonarqube analysis.
  * See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+MSBuild
@@ -47,17 +49,26 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         }
 
         // We must make sure that sonar-scanner-msbuild is initialized before started.
-        // It cannot be done by tasks because we don't know if sonarqube task is declared or not
+        // It cannot be done by tasks because we don't know if sonar task is declared or not
         // before the task graph is ready. That is why the initialization is done at evaluation time.
         project.gradle.taskGraph.whenReady { graph ->
             if (graph.hasTask("${project.path}:${SONAR_SCANNER_TASK_NAME}") || graph.hasTask(":${SONAR_SCANNER_TASK_NAME}")) {
-                project.logger.info("${SONAR_SCANNER_TASK_NAME} task was detected. Initializing sonar-scanner-msbuild...")
-                initSonarScanner(project)
+                project.logger.info("${SONAR_SCANNER_TASK_NAME} task was detected.")
+                if (graph.hasTask(LifecycleBasePlugin.CLEAN_TASK_NAME)) {
+                    project.tasks.named(LifecycleBasePlugin.CLEAN_TASK_NAME).configure {
+                        doLast {
+                            initSonarScanner(project)
+                        }
+                    }
+                } else {
+                    initSonarScanner(project)
+                }
             }
         }
     }
 
     private void initSonarScanner(Project project) {
+        project.logger.info('Initializing sonar-scanner-msbuild...')
         downloadSonarScanner(project)
         project.exec {
             commandLine = [getSonarScannerFile(project), 'begin'] + buildArgs(computeSonarProperties(project))
@@ -77,7 +88,6 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
                 dest tempDir
             }
             def scannerDir = getVersionCacheDir(project)
-            scannerDir.mkdirs()
             project.copy {
                 from project.zipTree(new File(tempDir, SONAR_SCANNER_ZIP))
                 into scannerDir
