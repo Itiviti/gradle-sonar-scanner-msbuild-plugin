@@ -25,9 +25,13 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
     static final SONAR_SCANNER_EXE = 'SonarScanner.MSBuild.exe'
     // keep the 'sonarqube' name for compatibility with the org.sonarqube plugin
     static final SONAR_SCANNER_TASK_NAME = 'sonar'
-    static final MANDATORY_ARGS = [k: 'sonar.projectKey',
-                                   n: 'sonar.projectName',
-                                   v: 'sonar.projectVersion'
+    static final MANDATORY_BEGIN_ARGS = [
+        k: 'sonar.projectKey',
+        n: 'sonar.projectName',
+        v: 'sonar.projectVersion'
+    ]
+    static final OPTIONAL_END_ARGS = [
+        'sonar.login',
     ]
     static final IGNORED_PROPERTIES = [
         'sonar.working.directory' // is automatically set and cannot be overridden on the command line
@@ -46,7 +50,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         }
 
         project.tasks.register(SONAR_SCANNER_TASK_NAME, Exec) {
-            commandLine = [getSonarScannerFile(project), 'end']
+            commandLine = [getSonarScannerFile(project), 'end'] + buildEndArgs(computeSonarProperties(project))
         }
 
         // We must make sure that sonar-scanner-msbuild is initialized before started.
@@ -72,7 +76,7 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         project.logger.info('Initializing sonar-scanner-msbuild...')
         downloadSonarScanner(project)
         project.exec {
-            commandLine = [getSonarScannerFile(project), 'begin'] + buildArgs(computeSonarProperties(project))
+            commandLine = [getSonarScannerFile(project), 'begin'] + buildBeginArgs(computeSonarProperties(project))
         }
     }
 
@@ -110,18 +114,28 @@ class SonarScannerMsbuildPlugin implements Plugin<Project> {
         new File(getVersionCacheDir(project), SONAR_SCANNER_EXE)
     }
 
-    private static def buildArgs(Map<String, Object> properties) {
-        def mandatoryArgs = MANDATORY_ARGS.collect { key, value ->
+    private static def buildBeginArgs(Map<String, Object> properties) {
+        def mandatoryArgs = MANDATORY_BEGIN_ARGS.collect { key, value ->
             "/${key}:${properties[value]}"
         }
 
         def otherArgs = properties.findAll { key, value ->
-            !(key in MANDATORY_ARGS.values()) && !(key in IGNORED_PROPERTIES) && value != ''
+            !(key in MANDATORY_BEGIN_ARGS.values()) && !(key in IGNORED_PROPERTIES) && value != ''
         }.collect { key, value ->
             "/d:${key}=${value}"
         }
 
         return mandatoryArgs + otherArgs
+    }
+
+    private static def buildEndArgs(Map<String, Object> properties) {
+        def args = properties.collect { key, value ->
+            if (key in OPTIONAL_END_ARGS) {
+                return "/d:${key}=${value}"
+            }
+        }.findAll { it != null }
+
+        return args
     }
 
     private def computeSonarProperties(Project project) {
