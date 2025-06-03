@@ -19,9 +19,8 @@ import org.sonarqube.gradle.SonarProperties
 class SonarScannerMsbuildPlugin implements Plugin<Project> {
 
     static final SONAR_SCANNER_GITHUB_URL = 'https://github.com/SonarSource/sonar-scanner-msbuild'
-    // Latest scanner version supporting JDK8
-    static final SONAR_SCANNER_VERSION = '4.7.0.2295'
-    static final SONAR_SCANNER_ZIP = "sonar-scanner-msbuild-${SONAR_SCANNER_VERSION}-net46.zip"
+    static final SONAR_SCANNER_VERSION = '8.0.3.99785'
+    static final SONAR_SCANNER_ZIP = "sonar-scanner-${SONAR_SCANNER_VERSION}-net-framework.zip"
     static final SONAR_SCANNER_EXE = 'SonarScanner.MSBuild.exe'
     // keep the 'sonarqube' name for compatibility with the org.sonarqube plugin
     static final SONAR_SCANNER_TASK_NAME = 'sonar'

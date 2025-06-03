@@ -10,7 +10,7 @@ description 'Uses sonar-scanner-msbuild to do static analysis with Sonarqube.'
 dependencies {
     implementation (
         [group: 'de.undercouch', name: 'gradle-download-task', version: '5.5.0'],
-        [group: 'org.sonarsource.scanner.gradle', name: 'sonarqube-gradle-plugin', version: '4.0.0.2929']
+        [group: 'org.sonarsource.scanner.gradle', name: 'sonarqube-gradle-plugin', version: '6.2.0.5505']
     )
 }
 
